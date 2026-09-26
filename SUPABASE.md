@@ -36,10 +36,10 @@ testing.
 **SQL Editor -> New query** -> paste the entire contents of
 [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) -> **Run**.
 
-Then repeat with
-[`supabase/migrations/0002_profiles.sql`](supabase/migrations/0002_profiles.sql).
+Then repeat with [`supabase/migrations/0002_profiles.sql`](supabase/migrations/0002_profiles.sql),
+and again with [`supabase/migrations/0003_shares.sql`](supabase/migrations/0003_shares.sql).
 
-You should see `Success. No rows returned` both times.
+You should see `Success. No rows returned` all three times.
 
 What this creates:
 
@@ -48,6 +48,7 @@ What this creates:
 | `public.drafts` | `ta_materials` (My Materials cards) | `(user_id, scope)` |
 | `public.autosave` | `ta_autosave::<scope>` (workspace contents) | `(user_id, scope)` |
 | `public.profiles` | Account Settings (name, description, avatar) | `user_id` |
+| `public.shares` | Shared with Me / the share modal | `(owner_id, recipient_id, scope)` |
 
 `drafts` and `autosave` have RLS enabled with an `auth.uid() = user_id`
 policy, so a signed-in user can only ever touch their own rows. `profiles` is
@@ -60,9 +61,24 @@ policies key off the object path: you may only write inside your own
 private). If Storage is ever unavailable the app stores a downscaled copy of
 the picture in `profiles.avatar_url` instead, so the feature never breaks.
 
+The third file is what makes sharing real. It adds `public.shares` plus:
+
+- a **read** policy on `drafts`/`autosave` that opens a row when a share
+  points at you - so you are looking at the owner's actual material, not a
+  copy;
+- a matching **write** policy that only fires when that share says `edit`;
+- `find_user_by_email(email)`, a `SECURITY DEFINER` function so the share
+  modal can turn an address into a colleague's id. `profiles` deliberately
+  holds no email address, which is why this exists. Execute is granted to
+  `authenticated` only - it answers `401` for anonymous callers;
+- `keep_row_owner()`, a `BEFORE UPDATE` trigger that rewrites `user_id` back
+  to whatever it already was. Ownership cannot be moved, no matter what the
+  request asks for.
+
 **You can skip this step safely.** If the tables are missing the client
 detects `PGRST205`, logs one console warning, sets the header chip to
-"Local only" and keeps working from localStorage.
+"Local only" and keeps working from localStorage. Without `0003` specifically,
+everything still works and *Shared with Me* simply stays on its empty state.
 
 ---
 
@@ -156,3 +172,28 @@ device only.
 
 **Profile picture does not upload** - the `avatars` bucket is missing. Re-run
 Step 2, second file. The picture still saves, as a downscaled inline copy.
+
+**"No TeachAssist account is registered to that address"** - either the
+colleague has never signed up, or `0003` has not been applied, so
+`find_user_by_email` does not exist. Re-run Step 2, third file. Check the
+spelling too: the lookup trims and lower-cases the address, but the account
+must be registered to exactly that mailbox.
+
+**Sharing fails with `permission denied for function find_user_by_email`** -
+the `grant execute ... to authenticated` line in `0003` did not run. Re-run
+the whole file; it is written to be re-runnable.
+
+**The material appears under *Shared with Me* but opens blank** - the owner
+had not saved that workspace when the share was created. Opening the material
+as the owner and pressing **Save draft** once fixes it, because sharing
+publishes the owner's rows.
+
+**A colleague with *Can view* can still type** - they cannot save, but check
+whether `0003` was applied: read-only is enforced twice, once in the browser
+and once by row-level security. If they can actually persist a change, the
+`edit drafts shared with you` policy is missing, so re-run the third file.
+
+**The share does not disappear immediately after Revoke** - the recipient's
+list is rebuilt from the server each time the *Shared with Me* tab opens, so
+press **Refresh** there (or reload). Their cached copy of the content is on
+their own device and cannot be deleted from yours.

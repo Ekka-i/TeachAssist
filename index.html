@@ -721,9 +721,14 @@
                             <h2 class="text-2xl font-bold text-gray-900">Shared with Me</h2>
                             <p class="text-sm text-gray-500 mt-1">Materials colleagues and mentors have shared.</p>
                         </div>
+                        <button onclick="refreshSharedView()" class="text-sm font-medium text-gray-600 border border-gray-200 bg-white px-3.5 py-2 rounded-lg hover:bg-gray-50 transition">
+                            <i class="fa-solid fa-rotate mr-1.5"></i>Refresh
+                        </button>
                     </div>
 
-                    <div class="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                    <div id="shared-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+                    <div id="shared-empty" class="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
                         <i class="fa-solid fa-user-group text-5xl text-gray-300 mb-4"></i>
                         <h4 class="font-bold text-gray-700 mb-1">Nothing shared with you yet</h4>
                         <p class="text-sm text-gray-500">When a colleague shares a material, it will appear here.</p>
@@ -1151,30 +1156,55 @@
                         <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-share-nodes"></i></div>
                         <div>
                             <h3 id="share-title" class="font-bold text-gray-900">Share this material</h3>
-                            <p id="share-subtitle" class="text-xs text-gray-500">Anyone with the link can open it.</p>
+                            <p id="share-subtitle" class="text-xs text-gray-500">Sharing a live copy with a colleague.</p>
                         </div>
                     </div>
                     <button onclick="closeModal('share-modal')" class="w-8 h-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 flex items-center justify-center shrink-0" title="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
 
                 <div class="p-5 space-y-4">
-                    <!-- Link + copy -->
+                    <!-- Find a colleague by email -->
                     <div>
-                        <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Shareable link</label>
+                        <label for="share-email" class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Share with a colleague</label>
                         <div class="flex gap-2">
-                            <input id="share-link" type="text" readonly class="flex-1 min-w-0 text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400">
-                            <button onclick="copyShareLink(this)" id="share-copy-btn" class="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-md transition whitespace-nowrap"><i class="fa-regular fa-copy mr-1.5"></i>Copy Link</button>
+                            <input id="share-email" type="email" placeholder="colleague@school.edu"
+                                   onkeydown="if(event.key==='Enter'){event.preventDefault();findShareRecipient();}"
+                                   class="flex-1 min-w-0 text-sm text-gray-800 bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400">
+                            <button id="share-find-btn" onclick="findShareRecipient()" class="text-sm font-semibold text-gray-700 bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition whitespace-nowrap">Find</button>
                         </div>
+                        <p id="share-status" class="text-xs mt-1.5 hidden"></p>
+                    </div>
+
+                    <!-- Resolved person -->
+                    <div id="share-recipient" class="hidden rounded-xl border border-blue-100 bg-blue-50/60 p-3 flex items-start gap-3">
+                        <img id="share-recipient-avatar" src="" alt="" class="w-9 h-9 rounded-full object-cover bg-white shrink-0 border border-white">
+                        <div class="min-w-0 flex-1">
+                            <p id="share-recipient-name" class="text-sm font-semibold text-gray-800 truncate"></p>
+                            <p id="share-recipient-bio" class="text-xs text-gray-500 truncate"></p>
+                        </div>
+                        <button onclick="clearShareRecipient()" class="text-[10px] font-semibold text-blue-600 hover:text-blue-800 shrink-0">Change</button>
                     </div>
 
                     <!-- Permission -->
-                    <div>
+                    <div id="share-permission-block" class="hidden">
                         <label for="share-permission" class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Permission</label>
                         <select id="share-permission" onchange="permissionChanged()" class="w-full text-sm text-gray-800 bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400">
                             <option value="view">Can view - read only</option>
                             <option value="edit">Can edit - changes are saved</option>
                         </select>
                         <p id="share-permission-hint" class="text-xs text-gray-500 mt-1.5">Recipients can read this material but cannot change it.</p>
+                    </div>
+
+                    <button id="share-do-btn" onclick="shareMaterial()" disabled
+                            class="w-full text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed px-4 py-2.5 rounded-lg shadow-md transition">
+                        <i class="fa-solid fa-user-plus mr-1.5"></i>Share
+                    </button>
+
+                    <!-- Existing access -->
+                    <div class="border-t border-gray-100 pt-4">
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">People with access</p>
+                        <div id="share-list" class="space-y-2"></div>
+                        <p id="share-list-empty" class="text-xs text-gray-400">Not shared with anyone yet.</p>
                     </div>
                 </div>
 
@@ -2556,21 +2586,52 @@
 
         /* ---------- Share modal ---------- */
         let sharePermission = 'view';
+        let shareRecipient = null;       // { id, name, bio, avatar, email }
+        let shareScope = 'lesson-plan';
+
+        function setShareStatus(message, tone) {
+            const el = document.getElementById('share-status');
+            if (!el) return;
+            if (!message) { el.className = 'text-xs mt-1.5 hidden'; el.innerText = ''; return; }
+            const colour = tone === 'ok' ? 'text-emerald-600'
+                : tone === 'err' ? 'text-red-600' : 'text-gray-500';
+            el.className = 'text-xs mt-1.5 block ' + colour;
+            el.innerText = message;
+        }
+
+        function clearShareRecipient(keepStatus) {
+            shareRecipient = null;
+            const box = document.getElementById('share-recipient');
+            if (box) box.classList.add('hidden');
+            const block = document.getElementById('share-permission-block');
+            if (block) block.classList.add('hidden');
+            const btn = document.getElementById('share-do-btn');
+            if (btn) btn.disabled = true;
+            if (!keepStatus) setShareStatus('');
+            const field = document.getElementById('share-email');
+            if (field && !keepStatus) { field.value = ''; }
+        }
 
         function openShareModal(btn) {
             const view = (btn && btn.closest && btn.closest('.app-view')) || activeView();
             const scope = view ? viewScope(view) : 'lesson-plan';
+            shareScope = scope || 'lesson-plan';
+
+            // A colleague can read or edit a material, but they can never hand
+            // it on to a third person.
+            if (Store.share) { toast('You cannot re-share a material shared with you.'); return; }
+            if (!Store.uid()) { openAuthModal('signin'); return; }
+
             const title = (collectWorkspacePayload(view || activeView()).title) || 'this material';
             const subtitle = document.getElementById('share-subtitle');
-            if (subtitle) subtitle.innerText = 'Sharing "' + title + '" with a class, mentor or cooperating teacher.';
-            const link = document.getElementById('share-link');
-            if (link) link.value = 'https://teachassist.app/s/' + scope + '-' + Math.random().toString(36).slice(2, 8);
+            if (subtitle) subtitle.innerText = 'Sharing "' + title + '" - your colleague opens your live copy.';
             sharePermission = 'view';
             const sel = document.getElementById('share-permission');
             if (sel) sel.value = 'view';
             permissionChanged();
-            resetCopyButton();
+            clearShareRecipient();
             openModal('share-modal');
+            loadShareList();
         }
 
         function permissionChanged() {
@@ -2579,44 +2640,140 @@
             const hint = document.getElementById('share-permission-hint');
             if (hint) {
                 hint.innerText = (sharePermission === 'edit')
-                    ? 'Recipients can change this material, and their edits are saved.'
-                    : 'Recipients can read this material but cannot change it.';
+                    ? 'They work in your copy - their edits are saved back to you.'
+                    : 'They can read this material but cannot change it.';
             }
         }
 
-        function resetCopyButton() {
-            const btn = document.getElementById('share-copy-btn');
-            if (!btn) return;
-            btn.className = 'text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-md transition whitespace-nowrap';
-            btn.innerHTML = '<i class="fa-regular fa-copy mr-1.5"></i>Copy Link';
+        function findShareRecipient() {
+            const field = document.getElementById('share-email');
+            const email = field ? field.value.trim() : '';
+            if (!email) { setShareStatus('Enter your colleague\'s email address.', 'err'); return; }
+            if (!Store.uid()) { setShareStatus('Sign in before sharing.', 'err'); return; }
+
+            const btn = document.getElementById('share-find-btn');
+            if (btn) btn.disabled = true;
+            setShareStatus('Looking for that account...', 'info');
+
+            Store.findShareRecipient(email).then(function (id) {
+                if (btn) btn.disabled = false;
+                if (!id) { setShareStatus('No TeachAssist account is registered to that address.', 'err'); return; }
+                if (id === Store.uid()) { setShareStatus('That is your own account.', 'err'); return; }
+                return Store.loadProfile(id).then(function (p) {
+                    shareRecipient = {
+                        id: id,
+                        name: (p && p.display_name) || '',
+                        bio: (p && p.bio) || '',
+                        avatar: (p && p.avatar_url) || '',
+                        email: email
+                    };
+                    showShareRecipient();
+                });
+            }).catch(function () {
+                if (btn) btn.disabled = false;
+                setShareStatus('Lookup failed - check your connection.', 'err');
+            });
         }
 
-        function copyShareLink(btn) {
-            const field = document.getElementById('share-link');
-            const value = field ? field.value : '';
-            if (!value) return;
+        function showShareRecipient() {
+            if (!shareRecipient) return;
+            const img = document.getElementById('share-recipient-avatar');
+            const name = document.getElementById('share-recipient-name');
+            const bio = document.getElementById('share-recipient-bio');
+            const box = document.getElementById('share-recipient');
+            const block = document.getElementById('share-permission-block');
+            const btn = document.getElementById('share-do-btn');
+            if (img) img.src = shareRecipient.avatar || DEFAULT_AVATAR;
+            if (name) name.innerText = shareRecipient.name || shareRecipient.email || 'Colleague';
+            if (bio) bio.innerText = shareRecipient.bio || shareRecipient.email || '';
+            if (box) box.classList.remove('hidden');
+            if (block) block.classList.remove('hidden');
+            if (btn) btn.disabled = false;
+            setShareStatus('');
+        }
 
-            const done = () => {
-                if (!btn) return;
-                btn.className = 'text-sm font-semibold text-white bg-emerald-600 px-4 py-2 rounded-lg shadow-md transition whitespace-nowrap';
-                btn.innerHTML = '<i class="fa-solid fa-check mr-1.5"></i>Copied!';
-                setTimeout(resetCopyButton, 1800);
-            };
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(value).then(done).catch(() => legacyCopy(field, done));
-            } else {
-                legacyCopy(field, done);
+        // Sharing points a colleague at your real rows, so those rows have to
+        // exist first - save the open workspace before creating the share.
+        function ensureSharedRows() {
+            const view = activeView();
+            if (view && viewScope(view) === shareScope) {
+                upsertDraftRecord(view);
+                Store.forceFlush();
             }
+            return Promise.resolve(true);
         }
 
-        function legacyCopy(field, done) {
-            if (!field) return;
-            field.focus();
-            field.select();
-            try { document.execCommand('copy'); done(); }
-            catch (e) { toast('Copy failed - select the link and press Ctrl+C.'); }
-            window.getSelection().removeAllRanges();
+        function shareMaterial() {
+            if (!shareRecipient) return;
+            const btn = document.getElementById('share-do-btn');
+            if (btn) { btn.disabled = true; btn.innerText = 'Sharing...'; }
+
+            const who = shareRecipient.name || shareRecipient.email || 'your colleague';
+            ensureSharedRows()
+                .then(function () { return Store.shareWith(shareRecipient.id, shareScope, sharePermission); })
+                .then(function (res) {
+                    if (btn) btn.innerHTML = '<i class="fa-solid fa-user-plus mr-1.5"></i>Share';
+                    if (res && res.error) {
+                        btn.disabled = false;
+                        setShareStatus('Could not share: ' + (res.error.message || res.error), 'err');
+                        return;
+                    }
+                    setShareStatus('Shared with ' + who + '. They will see it under Shared with Me.', 'ok');
+                    clearShareRecipient(true);
+                    loadShareList();
+                })
+                .catch(function () {
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-user-plus mr-1.5"></i>Share'; }
+                    setShareStatus('Sharing failed - check your connection.', 'err');
+                });
+        }
+
+        function loadShareList() {
+            Store.loadOutgoingShares(shareScope).then(renderShareList);
+        }
+
+        function renderShareList(rows) {
+            const list = document.getElementById('share-list');
+            const empty = document.getElementById('share-list-empty');
+            if (!list) return;
+            if (!rows || !rows.length) {
+                list.innerHTML = '';
+                if (empty) empty.classList.remove('hidden');
+                return;
+            }
+            if (empty) empty.classList.add('hidden');
+            list.innerHTML = rows.map(function (r) {
+                const name = r.name || r.bio || 'Colleague';
+                const sel = '<select onchange="changeSharePermission(\'' + r.recipientId + '\', this.value)" ' +
+                    'class="text-[11px] border border-gray-200 rounded px-1.5 py-1 bg-white text-gray-700 shrink-0">' +
+                    '<option value="view"' + (r.permission === 'view' ? ' selected' : '') + '>Can view</option>' +
+                    '<option value="edit"' + (r.permission === 'edit' ? ' selected' : '') + '>Can edit</option>' +
+                    '</select>';
+                return '<div class="flex items-center gap-2.5 rounded-lg border border-gray-200 bg-white p-2.5">' +
+                    '<img src="' + escapeHTML(r.avatar || DEFAULT_AVATAR) + '" alt="" class="w-7 h-7 rounded-full object-cover bg-gray-100 shrink-0">' +
+                    '<div class="min-w-0 flex-1">' +
+                    '<p class="text-xs font-semibold text-gray-800 truncate">' + escapeHTML(name) + '</p>' +
+                    (r.bio ? '<p class="text-[11px] text-gray-500 truncate">' + escapeHTML(r.bio) + '</p>' : '') +
+                    '</div>' + sel +
+                    '<button onclick="revokeShareFor(\'' + r.recipientId + '\')" ' +
+                    'class="text-[11px] font-semibold text-red-500 hover:text-red-700 shrink-0">Revoke</button>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function changeSharePermission(recipientId, permission) {
+            Store.shareWith(recipientId, shareScope, permission).then(function (res) {
+                if (res && res.error) { toast('Could not update that permission.'); loadShareList(); return; }
+                toast('Permission updated.');
+            });
+        }
+
+        function revokeShareFor(recipientId) {
+            Store.revokeShare(recipientId, shareScope).then(function (res) {
+                if (res && res.error) { toast('Could not revoke access.'); return; }
+                loadShareList();
+                toast('Access revoked.');
+            });
         }
 
         /* ---------- Pro modal ---------- */
@@ -3629,6 +3786,12 @@
         const Store = {
             syncEnabled: false,           // true only while a session exists
             DRAFTS_KEY: 'ta_materials',
+            SHARED_KEY: 'ta_shared_materials',
+
+            // Set only while a colleague's workspace is on screen:
+            // { ownerId, scope, permission }. Routes every read and write for
+            // that one scope to their row instead of ours.
+            share: null,
 
             _queue: [],                   // mutations waiting to be pushed
             _flushing: false,
@@ -3651,6 +3814,35 @@
                 return uid ? 'ta_autosave::' + uid + '::' + scope : null;
             },
 
+            // A colleague's lesson-plan lives under its own key, so their copy
+            // never collides with yours when you both have a lesson plan.
+            sharedAutoKey: function (ownerId, scope) {
+                return 'ta_autosave::shared::' + ownerId + '::' + scope;
+            },
+            // While a shared workspace is open, that scope reads and writes the
+            // colleague's storage instead of our own.
+            autoKeyShared: function (scope) {
+                return (this.share && this.share.scope === scope)
+                    ? this.sharedAutoKey(this.share.ownerId, scope)
+                    : this.autoKey(scope);
+            },
+            // Which user_id a row for this workspace belongs to: theirs while a
+            // shared workspace is open, otherwise ours.
+            rowOwner: function (scope) {
+                if (this.share && this.share.scope === scope) return this.share.ownerId;
+                return this.uid();
+            },
+            // The per-account fallback key for a scope. Follows rowOwner so a
+            // shared workspace never writes the colleague's content under our
+            // own account key.
+            accountAutoKey: function (scope) {
+                const owner = this.rowOwner(scope);
+                return owner ? 'ta_autosave::' + owner + '::' + scope : null;
+            },
+            isShareEditable: function () {
+                return !!this.share && this.share.permission === 'edit';
+            },
+
             readDrafts: function () {
                 try { return JSON.parse(localStorage.getItem(this.DRAFTS_KEY) || '[]'); }
                 catch (e) { return []; }
@@ -3665,13 +3857,27 @@
                 return ok;
             },
 
+            // Materials other people shared with us: cached snapshots of the
+            // shares + owner's drafts, keyed so they never land in our library.
+            readShared: function () {
+                try { return JSON.parse(localStorage.getItem(this.SHARED_KEY) || '[]'); }
+                catch (e) { return []; }
+            },
+            writeShared: function (list) {
+                try { localStorage.setItem(this.SHARED_KEY, JSON.stringify(list)); return true; }
+                catch (e) { return false; }
+            },
+            findShared: function (id) {
+                return this.readShared().filter(function (s) { return s && s.id === id; })[0] || null;
+            },
+
             getAutosave: function (scope) {
                 let data = null;
-                try { data = JSON.parse(localStorage.getItem(this.autoKey(scope)) || 'null'); }
+                try { data = JSON.parse(localStorage.getItem(this.autoKeyShared(scope)) || 'null'); }
                 catch (e) { data = null; }
                 if (data) return data;
                 // Fall back to the per-account copy (fresh browser, first sign-in).
-                const key = this.userAutoKey(scope);
+                const key = this.accountAutoKey(scope);
                 if (key) {
                     try { data = JSON.parse(localStorage.getItem(key) || 'null'); }
                     catch (e) { data = null; }
@@ -3680,10 +3886,10 @@
             },
             setAutosave: function (scope, data) {
                 let ok = true;
-                try { localStorage.setItem(this.autoKey(scope), JSON.stringify(data)); }
+                try { localStorage.setItem(this.autoKeyShared(scope), JSON.stringify(data)); }
                 catch (e) { ok = false; }
 
-                const userKey = this.userAutoKey(scope);
+                const userKey = this.accountAutoKey(scope);
                 if (userKey) {
                     try { localStorage.setItem(userKey, JSON.stringify(data)); } catch (e) { /* quota */ }
                 }
@@ -3725,18 +3931,19 @@
             },
 
             mirrorDrafts: function (list) {
-                const uid = this.uid();
-                if (!uid || !list || !list.length) return;
                 const self = this;
+                if (!this.uid() || !list || !list.length) return;
                 this._push({
                     table: 'drafts',
                     rows: list.filter(function (r) { return r && r.scope; })
-                              .map(function (r) { return self.recordToRow(r, uid); })
+                              .map(function (r) { return self.recordToRow(r, self.rowOwner(r.scope)); })
                 });
             },
 
             scheduleAutosaveSync: function (scope, data) {
-                this._pendingAutosave[scope] = data;
+                // Remember whose row this is at the moment of the keystroke;
+                // the flush can happen after the shared view has been closed.
+                this._pendingAutosave[scope] = { owner: this.rowOwner(scope), data: data };
                 const self = this;
                 clearTimeout(this._autosaveTimer);
                 // Keystroke-level saves stay local; the server copy trails by 2s.
@@ -3746,14 +3953,17 @@
                 const uid = this.uid();
                 const scopes = Object.keys(this._pendingAutosave);
                 if (!uid || !scopes.length) { this._pendingAutosave = {}; return; }
+                const pending = this._pendingAutosave;
                 const rows = scopes.map(function (scope) {
+                    const payload = pending[scope] || {};
+                    const data = payload.data || {};
                     return {
-                        user_id: uid,
+                        user_id: payload.owner || uid,
                         scope: scope,
-                        data: this._pendingAutosave[scope],
-                        updated_at: new Date((this._pendingAutosave[scope] || {}).t || Date.now()).toISOString()
+                        data: data,
+                        updated_at: new Date(data.t || Date.now()).toISOString()
                     };
-                }, this);
+                });
                 this._pendingAutosave = {};
                 this._push({ table: 'autosave', rows: rows });
             },
@@ -3849,8 +4059,10 @@
             },
 
             onSignedOut: function () {
-                // Nothing is removed: drafts stay, and ta_autosave::<uid>::* is
-                // left untouched so the next sign-in finds the work again.
+                // Nothing of OURS is removed: drafts stay, and
+                // ta_autosave::<uid>::* is left untouched so the next sign-in
+                // finds the work again. A colleague's material, though, has no
+                // business surviving a sign-out.
                 this.syncEnabled = false;
                 this._queue.length = 0;
                 this._flushing = false;
@@ -3858,6 +4070,10 @@
                 this._pulled = false;
                 this._pendingAutosave = {};
                 clearTimeout(this._autosaveTimer);
+                this.share = null;
+                activeSharedCard = null;
+                this.writeShared([]);
+                document.querySelectorAll('.share-banner').forEach(function (b) { b.parentNode.removeChild(b); });
                 setSyncChip(typeof authConfigured === 'function' && authConfigured() ? 'signin' : 'local');
             },
 
@@ -3898,7 +4114,197 @@
 
                     if (draftsChanged && typeof renderLibrary === 'function') renderLibrary();
                     self._restoreMerged();
+
+                    // Materials colleagues shared with us. Deliberately separate
+                    // and non-fatal: if migration 0003 isn't applied yet the
+                    // shares query simply fails and we keep the empty state.
+                    return self.refreshShared().then(function (shared) {
+                        if (typeof renderSharedList === 'function') renderSharedList(shared || []);
+                    });
                 });
+            },
+
+            /* ---------- shared with me ---------- */
+            // Rebuild the list from the server: shares is the authority on who
+            // may see what, so we replace rather than merge (a revoked share
+            // must actually disappear).
+            refreshShared: function () {
+                const self = this;
+                const client = this.client();
+                const uid = this.uid();
+                if (!client || !uid) { this.writeShared([]); return Promise.resolve([]); }
+
+                return Promise.all([
+                    Promise.resolve(client.from('shares')
+                        .select('owner_id,scope,permission,shared_at')
+                        .eq('recipient_id', uid)),
+                    Promise.resolve(client.from('drafts').select('*').neq('user_id', uid)),
+                    Promise.resolve(client.from('autosave').select('*').neq('user_id', uid)),
+                    Promise.resolve(client.from('profiles').select('user_id,display_name,bio,avatar_url'))
+                ]).then(function (res) {
+                    const sharesRes = res[0] || {};
+                    if (sharesRes.error) {
+                        // shares table not deployed - keep whatever we had.
+                        return self.readShared();
+                    }
+                    // RLS already narrows this to rows shared with us. Only take
+                    // a remote working copy when it is genuinely newer, so we
+                    // never stomp keystrokes that have not been pushed yet.
+                    ((res[2] && res[2].data) || []).forEach(function (row) {
+                        if (!row || !row.user_id || !row.scope || !row.data) return;
+                        const key = self.sharedAutoKey(row.user_id, row.scope);
+                        let local = null;
+                        try { local = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { local = null; }
+                        const remoteT = Date.parse(row.updated_at || '') || 0;
+                        if (local && ((local.t || 0) >= remoteT)) return;
+                        try { localStorage.setItem(key, JSON.stringify(row.data)); } catch (e) { /* quota */ }
+                    });
+
+                    const list = self._buildShared(
+                        sharesRes.data || [],
+                        (res[1] && res[1].data) || [],
+                        (res[3] && res[3].data) || []
+                    );
+                    self.writeShared(list);
+                    return list;
+                }).catch(function () { return self.readShared(); });
+            },
+
+            _buildShared: function (shares, rows, profiles) {
+                const self = this;
+                const owners = {};
+                profiles.forEach(function (p) { if (p && p.user_id) owners[p.user_id] = p; });
+                const byOwnerScope = {};
+                rows.forEach(function (r) {
+                    if (r && r.user_id && r.scope) byOwnerScope[r.user_id + '::' + r.scope] = r;
+                });
+
+                return shares.map(function (s) {
+                    if (!s || !s.owner_id || !s.scope) return null;
+                    const row = byOwnerScope[s.owner_id + '::' + s.scope];
+                    const record = row ? self.rowToRecord(row) : {};
+                    const p = owners[s.owner_id] || {};
+                    return {
+                        id: 'shared::' + s.owner_id + '::' + s.scope,
+                        ownerId: s.owner_id,
+                        scope: s.scope,
+                        permission: s.permission === 'edit' ? 'edit' : 'view',
+                        sharedAt: Date.parse(s.shared_at || '') || Date.now(),
+                        title: record.title || '',
+                        typeLabel: record.typeLabel || '',
+                        filter: record.filter, icon: record.icon, solid: record.solid,
+                        soft: record.soft, text: record.text, border: record.border,
+                        meta: record.meta || [],
+                        sections: record.sections || {},
+                        progress: typeof record.progress === 'number' ? record.progress : 0,
+                        updatedAt: record.updatedAt || Date.now(),
+                        owner: {
+                            name: p.display_name || '',
+                            bio: p.bio || '',
+                            avatar: p.avatar_url || ''
+                        }
+                    };
+                }).filter(Boolean);
+            },
+
+            // The colleague's working copy for a shared material. We store it
+            // under their shared key so opening it never clobbers our own
+            // copy of the same workspace.
+            loadSharedAutosave: function (ownerId, scope) {
+                const self = this;
+                const client = this.client();
+                const uid = this.uid();
+                if (!client || !uid) return Promise.resolve(null);
+                if (localStorage.getItem(this.sharedAutoKey(ownerId, scope))) return Promise.resolve(null);
+
+                return Promise.resolve(client.from('autosave')
+                    .select('user_id,scope,data,updated_at')
+                    .eq('user_id', ownerId).eq('scope', scope))
+                    .then(function (res) {
+                        const row = res && res.data && res.data[0];
+                        if (!row || !row.data) return null;
+                        try { localStorage.setItem(self.sharedAutoKey(ownerId, scope), JSON.stringify(row.data)); }
+                        catch (e) { /* quota */ }
+                        return row.data;
+                    })
+                    .catch(function () { return null; });
+            },
+
+            /* ---------- sharing ---------- */
+            loadProfile: function (userId) {
+                const client = this.client();
+                if (!client) return Promise.resolve(null);
+                return Promise.resolve(client.from('profiles')
+                    .select('user_id,display_name,bio,avatar_url')
+                    .eq('user_id', userId).limit(1))
+                    .then(function (res) {
+                        if (res && res.error) return null;
+                        return (res && res.data && res.data[0]) || null;
+                    })
+                    .catch(function () { return null; });
+            },
+            findShareRecipient: function (email) {
+                const client = this.client();
+                if (!client) return Promise.resolve(null);
+                return Promise.resolve(client.rpc('find_user_by_email', { p_email: String(email || '').trim() }))
+                    .then(function (res) {
+                        if (res && res.error) return null;
+                        const row = res && res.data && res.data[0];
+                        return (row && row.user_id) ? row.user_id : null;
+                    })
+                    .catch(function () { return null; });
+            },
+            loadOutgoingShares: function (scope) {
+                const client = this.client();
+                const uid = this.uid();
+                if (!client || !uid) return Promise.resolve([]);
+                return Promise.resolve(client.from('shares')
+                    .select('owner_id,recipient_id,scope,permission,shared_at')
+                    .eq('owner_id', uid).eq('scope', scope))
+                    .then(function (res) {
+                        if (res && res.error) return [];
+                        const rows = (res && res.data) || [];
+                        if (!rows.length) return [];
+                        return Promise.resolve(client.from('profiles')
+                            .select('user_id,display_name,bio,avatar_url')
+                            .in('user_id', rows.map(function (r) { return r.recipient_id; })))
+                            .then(function (pres) {
+                                const byId = {};
+                                ((pres && pres.data) || []).forEach(function (p) { byId[p.user_id] = p; });
+                                return rows.map(function (r) {
+                                    const p = byId[r.recipient_id] || {};
+                                    return {
+                                        recipientId: r.recipient_id,
+                                        permission: r.permission,
+                                        name: p.display_name || '',
+                                        bio: p.bio || '',
+                                        avatar: p.avatar_url || ''
+                                    };
+                                });
+                            });
+                    })
+                    .catch(function () { return []; });
+            },
+            shareWith: function (recipientId, scope, permission) {
+                const client = this.client();
+                const uid = this.uid();
+                if (!client || !uid) return Promise.resolve({ error: 'not-signed-in' });
+                return Promise.resolve(client.from('shares').upsert([{
+                    owner_id: uid, recipient_id: recipientId, scope: scope,
+                    permission: permission === 'edit' ? 'edit' : 'view'
+                }], { onConflict: 'owner_id,recipient_id,scope' }))
+                    .then(function (res) { return res || {}; })
+                    .catch(function (err) { return { error: err }; });
+            },
+            revokeShare: function (recipientId, scope) {
+                const client = this.client();
+                const uid = this.uid();
+                if (!client || !uid) return Promise.resolve({ error: 'not-signed-in' });
+                return Promise.resolve(client.from('shares')
+                    .delete()
+                    .eq('owner_id', uid).eq('recipient_id', recipientId).eq('scope', scope))
+                    .then(function (res) { return res || {}; })
+                    .catch(function (err) { return { error: err }; });
             },
 
             _mergeDrafts: function (rows) {
@@ -4107,16 +4513,18 @@
         }, true);
 
         /* ---------- Save draft ---------- */
-        function saveDraft(btn, thenNavigate) {
-            const view = (btn && btn.closest && btn.closest('.app-view')) || activeView();
-            if (!view) return;
-            const payload = collectWorkspacePayload(view);
-            const list = Store.readDrafts();
-            const now = Date.now();
-            const index = list.findIndex(d => d.scope === payload.scope);
+        // The shared record for whatever colleague's material is on screen;
+        // keeps their card id and owner info so edits land on the right row.
+        let activeSharedCard = null;
 
+        // Builds the card for the open workspace and mirrors both the card and
+        // the working copy. Shared by the Save button and by the share flow,
+        // which must publish rows before a colleague can be pointed at them.
+        function upsertDraftRecord(view) {
+            const payload = collectWorkspacePayload(view);
+            const now = Date.now();
             const record = {
-                id: index >= 0 ? list[index].id : payload.scope + '-' + now,
+                id: payload.scope + '-' + now,
                 scope: payload.scope,
                 title: payload.title,
                 typeLabel: payload.typeLabel,
@@ -4129,14 +4537,43 @@
                 updatedAt: now
             };
 
-            if (index >= 0) list[index] = record;
+            // Editing someone else's material: update THEIR card row and leave
+            // our own library untouched - their material never enters our list.
+            if (Store.share && Store.share.scope === payload.scope) {
+                if (activeSharedCard && activeSharedCard.id) record.id = activeSharedCard.id;
+                persistAutosave(view);
+                Store._push({ table: 'drafts', rows: [Store.recordToRow(record, Store.share.ownerId)] });
+                return true;
+            }
+
+            const list = Store.readDrafts();
+            const index = list.findIndex(d => d.scope === payload.scope);
+            if (index >= 0) { record.id = list[index].id; list[index] = record; }
             else list.unshift(record);
 
             const ok = Store.writeDrafts(list);
             persistAutosave(view);
-            renderLibrary();
-            toast(ok ? 'Draft saved to My Materials.' : 'Could not save - browser storage is unavailable.');
-            if (thenNavigate) switchTab('my-materials', null);
+            return ok;
+        }
+
+        function saveDraft(btn, thenNavigate) {
+            const view = (btn && btn.closest && btn.closest('.app-view')) || activeView();
+            if (!view) return;
+
+            // A view-only colleague gets no Save: there is nothing of theirs
+            // to keep, and RLS would refuse the write anyway.
+            if (Store.share && Store.share.scope === viewScope(view) && !Store.isShareEditable()) {
+                toast('This material is view-only, so it cannot be saved.');
+                return;
+            }
+
+            const sharing = !!(Store.share && Store.share.scope === viewScope(view));
+            const ok = upsertDraftRecord(view);
+            if (!sharing) renderLibrary();
+            toast(sharing ? 'Saved to your colleague\'s material.'
+                : ok ? 'Draft saved to My Materials.'
+                : 'Could not save - browser storage is unavailable.');
+            if (thenNavigate) switchTab(sharing ? 'shared' : 'my-materials', null);
         }
 
         /* ---------- My Materials library ---------- */
@@ -4198,8 +4635,193 @@
             filterLibrary(libraryFilter, chip);
         }
 
+        /* ---------- Shared with Me ---------- */
+        // Rendered by index rather than by id so no user-controlled string is
+        // ever interpolated into an inline handler.
+        let sharedItems = [];
+
+        function renderSharedList(items) {
+            const grid = document.getElementById('shared-grid');
+            const empty = document.getElementById('shared-empty');
+            if (!grid) return;
+
+            sharedItems = items || Store.readShared();
+
+            if (!sharedItems.length) {
+                grid.innerHTML = '';
+                if (empty) empty.classList.remove('hidden');
+                return;
+            }
+            if (empty) empty.classList.add('hidden');
+
+            grid.innerHTML = sharedItems.map(function (s, i) {
+                const owner = s.owner || {};
+                const ownerName = owner.name || 'A colleague';
+                const bio = owner.bio || '';
+                const title = s.title || 'Untitled material';
+                const badge = (s.permission === 'edit')
+                    ? '<span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full whitespace-nowrap">Can edit</span>'
+                    : '<span class="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full whitespace-nowrap">View only</span>';
+
+                return '<article class="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-3">' +
+                    '<div class="flex items-start gap-2.5">' +
+                        '<img src="' + escapeHTML(owner.avatar || DEFAULT_AVATAR) + '" alt="" class="w-8 h-8 rounded-full object-cover bg-gray-100 shrink-0">' +
+                        '<div class="min-w-0 flex-1">' +
+                            '<p class="text-xs font-semibold text-gray-800 truncate">' + escapeHTML(ownerName) + '</p>' +
+                            (bio ? '<p class="text-[11px] text-gray-500 truncate">' + escapeHTML(bio) + '</p>' : '') +
+                        '</div>' + badge +
+                    '</div>' +
+                    '<div class="min-w-0">' +
+                        '<p class="text-sm font-bold text-gray-900 truncate">' + escapeHTML(title) + '</p>' +
+                        '<p class="text-xs text-gray-500 mt-0.5 truncate">' + escapeHTML(s.typeLabel || 'Material') + '</p>' +
+                    '</div>' +
+                    '<div class="flex items-center gap-2 mt-auto">' +
+                        '<button onclick="openSharedMaterial(' + i + ', event)" class="flex-1 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg transition">Open</button>' +
+                        '<button onclick="removeSharedMaterial(' + i + ')" title="Remove from my list" ' +
+                        'class="text-sm font-medium text-gray-500 border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 transition">' +
+                        '<i class="fa-solid fa-xmark"></i></button>' +
+                    '</div>' +
+                    '</article>';
+            }).join('');
+        }
+
+        function refreshSharedView() {
+            if (!Store.uid()) { renderSharedList([]); return; }
+            Store.refreshShared().then(renderSharedList);
+        }
+
+        function removeSharedMaterial(index) {
+            const item = sharedItems[index];
+            if (!item) return;
+            const client = Store.client();
+            if (!client) return;
+            Promise.resolve(client.from('shares').delete()
+                .eq('recipient_id', Store.uid())
+                .eq('owner_id', item.ownerId)
+                .eq('scope', item.scope))
+                .then(function () { return Store.refreshShared(); })
+                .then(renderSharedList)
+                .catch(function () { toast('Could not remove that material.'); });
+        }
+
+        function openSharedMaterial(index, e) {
+            if (e) e.stopPropagation();
+            if (!Store.uid()) { openAuthModal('signin'); return; }
+
+            const item = sharedItems[index];
+            if (!item) { toast('That material is no longer shared with you.'); return; }
+            const view = document.getElementById('view-' + item.scope);
+            if (!view) { toast('That workspace is no longer available.'); return; }
+
+            // Flush and forget whatever we were looking at first, so two
+            // shared materials can never be armed at once.
+            clearShareContext();
+            activeSharedCard = item;
+            Store.share = { ownerId: item.ownerId, scope: item.scope, permission: item.permission };
+
+            Store.loadSharedAutosave(item.ownerId, item.scope).then(function () {
+                const data = Store.getAutosave(item.scope);
+                if (data) applyPayload(view, data);
+                else if (item.sections && Object.keys(item.sections).length) applyPayload(view, item);
+
+                switchTab(item.scope, null);
+                applyShareMode(view, item);
+                const ownerName = (item.owner && item.owner.name) || 'a colleague';
+                toast('Opened "' + (item.title || 'material') + '" shared by ' + ownerName + '.');
+            });
+        }
+
+        // Read-only is enforced twice: here, so the UI is honest about it, and
+        // again by row-level security on the server, so it cannot be worked
+        // around from the console.
+        function applyShareMode(view, item) {
+            if (!view) return;
+            const viewOnly = item.permission !== 'edit';
+            const mark = function (el) {
+                const ce = el.getAttribute('contenteditable');
+                const isCE = (ce !== null && ce !== undefined);
+                // A block that is not editable to begin with stays that way.
+                if (isCE && ce === 'false') return;
+
+                if (viewOnly) el.classList.add('ta-share-ro');
+                else el.classList.remove('ta-share-ro');
+
+                if (isCE) el.setAttribute('contenteditable', viewOnly ? 'false' : 'true');
+                else if (el.tagName === 'SELECT') el.disabled = viewOnly;
+                else if (el.type === 'checkbox' || el.type === 'radio') el.disabled = viewOnly;
+                else el.readOnly = viewOnly;
+            };
+
+            view.querySelectorAll('input, select, textarea, [contenteditable]').forEach(mark);
+            view.querySelectorAll('[onclick*="saveDraft"]').forEach(function (el) {
+                el.classList.toggle('hidden', viewOnly);
+            });
+
+            const ownerName = (item.owner && item.owner.name) || 'your colleague';
+            const sub = document.getElementById('header-subtitle');
+            if (sub) {
+                sub.innerText = viewOnly
+                    ? ownerName + ' shared this material with you - view only'
+                    : ownerName + "'s material - your edits are saved for them";
+            }
+            showShareBanner(view, viewOnly, ownerName);
+        }
+
+        function showShareBanner(view, viewOnly, ownerName) {
+            let banner = view.querySelector('.share-banner');
+            if (!banner) {
+                banner = document.createElement('div');
+                view.insertBefore(banner, view.firstChild);
+            }
+            const headline = viewOnly ? 'View only' : "Editing " + ownerName + "'s material";
+            const detail = viewOnly
+                ? 'Shared by ' + ownerName + '. You can read it but not change it.'
+                : 'Changes are saved straight back to ' + ownerName + '.';
+
+            banner.className = 'share-banner flex flex-wrap items-center gap-x-3 gap-y-1 px-4 lg:px-6 py-2.5 text-sm border-b ' +
+                (viewOnly ? 'bg-blue-50 text-blue-800 border-blue-100' : 'bg-emerald-50 text-emerald-800 border-emerald-100');
+            banner.innerHTML =
+                '<i class="fa-solid ' + (viewOnly ? 'fa-lock' : 'fa-pen-nib') + '"></i>' +
+                '<span class="font-semibold">' + escapeHTML(headline) + '</span>' +
+                '<span class="text-xs opacity-80">' + escapeHTML(detail) + '</span>' +
+                '<button onclick="leaveSharedMaterial()" class="ml-auto text-xs font-semibold underline opacity-90 hover:opacity-100">Back to Shared with Me</button>';
+        }
+
+        function resetShareMode(view) {
+            if (!view) return;
+            view.querySelectorAll('.ta-share-ro').forEach(function (el) {
+                el.classList.remove('ta-share-ro');
+                if (el.tagName === 'SELECT') el.disabled = false;
+                else if (el.type === 'checkbox' || el.type === 'radio') el.disabled = false;
+                else if (el.isContentEditable || el.getAttribute('contenteditable')) {
+                    el.setAttribute('contenteditable', 'true');
+                } else el.readOnly = false;
+            });
+            view.querySelectorAll('[onclick*="saveDraft"]').forEach(function (el) {
+                el.classList.remove('hidden');
+            });
+        }
+
+        // Leaving a shared workspace: flush anything the colleague typed so it
+        // reaches their row, then forget the context entirely.
+        function clearShareContext() {
+            if (!Store.share) return;
+            const scope = Store.share.scope;
+            try { Store.forceFlush(); } catch (e) { /* nothing queued */ }
+            Store.share = null;
+            activeSharedCard = null;
+            document.querySelectorAll('.share-banner').forEach(function (b) { b.parentNode.removeChild(b); });
+            resetShareMode(document.getElementById('view-' + scope));
+        }
+
+        function leaveSharedMaterial() {
+            clearShareContext();
+            switchTab('shared', null);
+        }
+
         function openDraft(id, e) {
             if (e) e.stopPropagation();
+            clearShareContext();          // our own draft, never a colleague's
             const item = Store.readDrafts().filter(d => d.id === id)[0];
             if (!item) { toast('That draft could not be found.'); return; }
             const view = document.getElementById('view-' + item.scope);
@@ -4253,6 +4875,13 @@
 
         /* ---------- Core SPA router ---------- */
         function switchTab(tabId, element) {
+            // Any deliberate navigation away tears down a shared workspace, so
+            // a colleague's material can never linger under our own nav state.
+            // openSharedMaterial reaches here with a matching scope and no
+            // element, so it survives; every sidebar press does not.
+            const fromSidebar = !!(element && element.classList && element.classList.contains('sidebar-btn'));
+            if (Store.share && (Store.share.scope !== tabId || fromSidebar)) clearShareContext();
+
             // 1. Hide every view
             document.querySelectorAll('.app-view').forEach(view => {
                 view.classList.add('hidden');
@@ -4307,7 +4936,8 @@
                 headerSubtitle.innerText = HEADER_SUBTITLES[tabId]
                     || (material ? ('Editing: ' + material.title) : 'Ready to create something amazing today?');
             }
-            if (shareBtn) shareBtn.classList.toggle('hidden', !isEditor);
+            // You can hand on your own material, never somebody else's.
+            if (shareBtn) shareBtn.classList.toggle('hidden', !isEditor || !!Store.share);
 
             // 6. The library always reflects whatever is in storage right now,
             //    and the header count tracks it instead of a hardcoded number.
@@ -4318,6 +4948,10 @@
                     headerSubtitle.innerText = 'You have ' + total + ' saved material' + (total === 1 ? '' : 's');
                 }
             }
+
+            // 7. Shared with Me is rebuilt from the server each time so a
+            //    revoked share disappears without a reload.
+            if (tabId === 'shared') refreshSharedView();
         }
 
         /* ---------- Boot ----------

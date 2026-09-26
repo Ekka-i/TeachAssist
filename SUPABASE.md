@@ -36,7 +36,10 @@ testing.
 **SQL Editor -> New query** -> paste the entire contents of
 [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) -> **Run**.
 
-You should see `Success. No rows returned`.
+Then repeat with
+[`supabase/migrations/0002_profiles.sql`](supabase/migrations/0002_profiles.sql).
+
+You should see `Success. No rows returned` both times.
 
 What this creates:
 
@@ -44,9 +47,18 @@ What this creates:
 |---|---|---|
 | `public.drafts` | `ta_materials` (My Materials cards) | `(user_id, scope)` |
 | `public.autosave` | `ta_autosave::<scope>` (workspace contents) | `(user_id, scope)` |
+| `public.profiles` | Account Settings (name, description, avatar) | `user_id` |
 
-Both have RLS enabled with an `auth.uid() = user_id` policy, so a signed-in
-user can only ever touch their own rows.
+`drafts` and `autosave` have RLS enabled with an `auth.uid() = user_id`
+policy, so a signed-in user can only ever touch their own rows. `profiles` is
+readable by **any** signed-in user - that is what makes *Shared by ...* work -
+but only writable by its owner.
+
+The second file also creates the public **`avatars`** storage bucket. Its
+policies key off the object path: you may only write inside your own
+`<user_id>/` folder, and the bucket is readable by anyone (a picture is not
+private). If Storage is ever unavailable the app stores a downscaled copy of
+the picture in `profiles.avatar_url` instead, so the feature never breaks.
 
 **You can skip this step safely.** If the tables are missing the client
 detects `PGRST205`, logs one console warning, sets the header chip to
@@ -135,5 +147,12 @@ header says `Sign in`; click it.
 **`GEMINI_API_KEY is not set`** - Step 3, item 2.
 
 **Tables exist but nothing syncs** - check you are actually signed in (the
-profile menu shows your email rather than *Not signed in*), and that the
+header shows your avatar rather than the **Sign in** button), and that the
 `auth.users` row matches the `user_id` you are querying with.
+
+**Account Settings says your changes were not saved** - `profiles` is missing.
+Re-run Step 2, second file. Until then your name and description stay on this
+device only.
+
+**Profile picture does not upload** - the `avatars` bucket is missing. Re-run
+Step 2, second file. The picture still saves, as a downscaled inline copy.

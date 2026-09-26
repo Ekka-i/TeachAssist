@@ -180,7 +180,7 @@
             <!-- Left: Welcome -->
             <div class="flex items-center gap-3">
                 <div class="bg-blue-100 p-2 rounded-full hidden md:block">
-                    <img src="https://ui-avatars.com/api/?name=NT&background=0D8ABC&color=fff&rounded=true" alt="Avatar" class="w-8 h-8 rounded-full">
+                    <img id="header-avatar" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMzIiIGZpbGw9IiNlMmU4ZjAiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjI1IiByPSIxMSIgZmlsbD0iIzk0YTNiOCIvPjxwYXRoIGQ9Ik0zMiAzOWMtMTEgMC0xOSA3LTIwIDE3YTMyIDMyIDAgMCAwIDQwIDBjLTEtMTAtOS0xNy0yMC0xN3oiIGZpbGw9IiM5NGEzYjgiLz48L3N2Zz4=" alt="Avatar" class="w-8 h-8 rounded-full bg-gray-100">
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
@@ -217,44 +217,29 @@
                 <div class="relative">
                     <button id="notif-btn" onclick="toggleNotifMenu(event)" aria-haspopup="true" aria-expanded="false" class="relative p-2 text-gray-400 hover:text-gray-500 transition-colors rounded-full hover:bg-gray-100">
                         <i class="fa-regular fa-bell text-xl"></i>
-                        <span class="absolute top-1 right-1 block h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white">3</span>
                     </button>
                     <div id="notif-menu" class="hidden absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-40 overflow-hidden text-left" role="menu">
                         <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                             <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Notifications</span>
-                            <span class="text-[10px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-full">3 new</span>
                         </div>
-                        <button onclick="closeAllMenus()" class="w-full text-left px-4 py-3 flex gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
-                            <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-user-group text-xs"></i></span>
-                            <span class="min-w-0">
-                                <span class="block text-xs font-semibold text-gray-800">Maria Santos shared a material with you</span>
-                                <span class="block text-[11px] text-gray-500 mt-0.5">Grade 5 Science - Ecosystems Unit</span>
-                                <span class="block text-[10px] text-gray-400 mt-1">2 days ago</span>
-                            </span>
-                        </button>
-                        <button onclick="closeAllMenus()" class="w-full text-left px-4 py-3 flex gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100">
-                            <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-crown text-xs"></i></span>
-                            <span class="min-w-0">
-                                <span class="block text-xs font-semibold text-gray-800">You have 3 free generations left this month</span>
-                                <span class="block text-[11px] text-gray-500 mt-0.5">Upgrade to Pro for unlimited runs.</span>
-                                <span class="block text-[10px] text-gray-400 mt-1">5 days ago</span>
-                            </span>
-                        </button>
-                        <button onclick="closeAllMenus()" class="w-full text-left px-4 py-3 flex gap-3 hover:bg-gray-50 transition-colors">
-                            <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-check text-xs"></i></span>
-                            <span class="min-w-0">
-                                <span class="block text-xs font-semibold text-gray-800">Your Lesson Plan draft was autosaved</span>
-                                <span class="block text-[11px] text-gray-500 mt-0.5">Pick up where you left off from My Materials.</span>
-                                <span class="block text-[10px] text-gray-400 mt-1">1 week ago</span>
-                            </span>
-                        </button>
+                        <div class="px-4 py-8 text-center">
+                            <i class="fa-regular fa-bell-slash text-3xl text-gray-300 mb-3"></i>
+                            <p class="text-sm font-semibold text-gray-600">No notifications</p>
+                            <p class="text-xs text-gray-400 mt-1">Shares and autosave alerts will appear here.</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Profile -->
-                <div class="relative">
+                <!-- Profile: signed-out visitors see a Sign in button instead of the avatar menu -->
+                <div id="header-signed-out" class="flex items-center">
+                    <button id="header-signin-btn" onclick="openAuthModal('signin')" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-md shadow-blue-500/25 transition">
+                        <i class="fa-solid fa-right-to-bracket text-xs"></i> Sign in
+                    </button>
+                </div>
+
+                <div id="header-signed-in" class="relative hidden">
                     <div id="profile-trigger" onclick="toggleProfileMenu(event)" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-1.5 rounded-lg transition-colors border border-transparent hover:border-gray-200">
-                        <img src="https://static.wikia.nocookie.net/silly-cat/images/f/fe/El_Gato.png/revision/latest?cb=20231010115301" alt="User" class="h-9 w-9 rounded-full object-cover">
+                        <img id="profile-avatar" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMzIiIGZpbGw9IiNlMmU4ZjAiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjI1IiByPSIxMSIgZmlsbD0iIzk0YTNiOCIvPjxwYXRoIGQ9Ik0zMiAzOWMtMTEgMC0xOSA3LTIwIDE3YTMyIDMyIDAgMCAwIDQwIDBjLTEtMTAtOS0xNy0yMC0xN3oiIGZpbGw9IiM5NGEzYjgiLz48L3N2Zz4=" alt="User" class="h-9 w-9 rounded-full object-cover bg-gray-100">
                         <div class="hidden lg:block text-sm">
                             <p class="font-semibold text-gray-800 leading-tight" id="profile-display-name">User</p>
                             <p class="text-xs text-gray-500" id="profile-display-sub">Pre-Service Teacher</p>
@@ -268,9 +253,6 @@
                         </div>
                         <button onclick="profileAction('Account Settings')" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3">
                             <i class="fa-solid fa-gear w-4 text-center text-gray-400"></i> Account Settings
-                        </button>
-                        <button onclick="profileAction('Switch User')" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3">
-                            <i class="fa-solid fa-right-left w-4 text-center text-gray-400"></i> Switch User
                         </button>
                         <div class="my-1 border-t border-gray-100"></div>
                         <button onclick="profileAction('Log Out')" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3">
@@ -415,44 +397,11 @@
                             <button onclick="switchTab('my-materials', null)" class="text-sm text-blue-600 hover:underline font-medium">View All</button>
                         </div>
                         
-                        <div class="flex gap-4 overflow-x-auto pb-4 snap-x">
-                            <div onclick="switchTab('lesson-plan', null)" class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 min-w-[260px] snap-start hover:shadow-md transition-shadow cursor-pointer">
-                                <div class="flex items-start gap-3 mb-3">
-                                    <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                                        <i class="fa-solid fa-clipboard-list text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800 text-sm line-clamp-1">Lesson Plan - 5Es Model</h4>
-                                        <p class="text-xs text-gray-500">Lesson</p>
-                                    </div>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: 60%"></div>
-                                </div>
-                                <div class="flex justify-between items-center mt-3">
-                                    <span class="text-[10px] text-gray-400">60% Complete</span>
-                                    <span class="text-[10px] text-gray-400">May 15, 2025</span>
-                                </div>
-                            </div>
-
-                            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 min-w-[260px] snap-start hover:shadow-md transition-shadow cursor-pointer">
-                                <div class="flex items-start gap-3 mb-3">
-                                    <div class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-                                        <i class="fa-solid fa-person-chalkboard text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800 text-sm line-clamp-1">Photosynthesis PPT</h4>
-                                        <p class="text-xs text-gray-500">PowerPoint</p>
-                                    </div>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                                    <div class="bg-orange-500 h-1.5 rounded-full" style="width: 90%"></div>
-                                </div>
-                                <div class="flex justify-between items-center mt-3">
-                                    <i class="fa-solid fa-crown text-yellow-400 text-[10px]"></i>
-                                    <span class="text-[10px] text-gray-400">May 14, 2025</span>
-                                </div>
-                            </div>
+                        <div class="text-center py-10 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                            <i class="fa-regular fa-folder-open text-4xl text-gray-300 mb-3"></i>
+                            <h4 class="font-bold text-gray-700 mb-1">Nothing in progress</h4>
+                            <p class="text-sm text-gray-500 mb-4">Start a material and it will show up here so you can pick it back up.</p>
+                            <button onclick="switchTab('all-features', null)" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-md transition">Browse material builders</button>
                         </div>
                     </div>
 
@@ -720,7 +669,7 @@
 
                     <!-- Filter Chips -->
                     <div class="flex flex-wrap gap-2" id="library-filters">
-                        <button onclick="filterLibrary('all', this)" data-filter="all" class="lib-filter text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-colors bg-blue-600 border-blue-600 text-white">All <span id="lib-count-all" class="opacity-70 ml-1">4</span></button>
+                        <button onclick="filterLibrary('all', this)" data-filter="all" class="lib-filter text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-colors bg-blue-600 border-blue-600 text-white">All <span id="lib-count-all" class="opacity-70 ml-1">0</span></button>
                         <button onclick="filterLibrary('lesson', this)" data-filter="lesson" class="lib-filter text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-colors bg-white border-gray-200 text-gray-600 hover:border-blue-300">Lesson Plans</button>
                         <button onclick="filterLibrary('ppt', this)" data-filter="ppt" class="lib-filter text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-colors bg-white border-gray-200 text-gray-600 hover:border-blue-300">Slides</button>
                         <button onclick="filterLibrary('worksheet', this)" data-filter="worksheet" class="lib-filter text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-colors bg-white border-gray-200 text-gray-600 hover:border-blue-300">Worksheets</button>
@@ -752,46 +701,13 @@
                             <h2 class="text-2xl font-bold text-gray-900">Favorites</h2>
                             <p class="text-sm text-gray-500 mt-1">Materials you starred for quick access.</p>
                         </div>
-                        <span class="text-xs font-semibold bg-pink-50 text-pink-600 border border-pink-200 px-3 py-1.5 rounded-full"><i class="fa-solid fa-heart mr-1"></i> 4 items</span>
+                        <span class="text-xs font-semibold bg-pink-50 text-pink-600 border border-pink-200 px-3 py-1.5 rounded-full"><i class="fa-solid fa-heart mr-1"></i> <span id="fav-count">0</span> items</span>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        <div onclick="switchTab('lesson-plan', null)" class="lib-card bg-white rounded-xl shadow-sm border border-pink-100 hover:shadow-md hover:border-pink-200 transition-all cursor-pointer group p-4">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-clipboard-list"></i></div>
-                                <button class="w-7 h-7 rounded-md bg-pink-50 text-pink-500"><i class="fa-solid fa-heart text-xs"></i></button>
-                            </div>
-                            <h4 class="font-semibold text-sm text-gray-800 mb-1">Lesson Plan - Fractions</h4>
-                            <p class="text-xs text-gray-500 mb-3">Lesson Plan · Grade 4</p>
-                            <span class="text-[10px] text-gray-400">Favorited May 15, 2025</span>
-                        </div>
-                        <div onclick="switchTab('powerpoint', null)" class="lib-card bg-white rounded-xl shadow-sm border border-pink-100 hover:shadow-md hover:border-pink-200 transition-all cursor-pointer group p-4">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center"><i class="fa-solid fa-person-chalkboard"></i></div>
-                                <button class="w-7 h-7 rounded-md bg-pink-50 text-pink-500"><i class="fa-solid fa-heart text-xs"></i></button>
-                            </div>
-                            <h4 class="font-semibold text-sm text-gray-800 mb-1">Photosynthesis PPT</h4>
-                            <p class="text-xs text-gray-500 mb-3">PowerPoint · Grade 7</p>
-                            <span class="text-[10px] text-gray-400">Favorited May 14, 2025</span>
-                        </div>
-                        <div onclick="switchTab('assessment', null)" class="lib-card bg-white rounded-xl shadow-sm border border-pink-100 hover:shadow-md hover:border-pink-200 transition-all cursor-pointer group p-4">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="w-10 h-10 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center"><i class="fa-solid fa-list-check"></i></div>
-                                <button class="w-7 h-7 rounded-md bg-pink-50 text-pink-500"><i class="fa-solid fa-heart text-xs"></i></button>
-                            </div>
-                            <h4 class="font-semibold text-sm text-gray-800 mb-1">Unit 3 Quiz - Fractions</h4>
-                            <p class="text-xs text-gray-500 mb-3">Assessment · Grade 4</p>
-                            <span class="text-[10px] text-gray-400">Favorited May 12, 2025</span>
-                        </div>
-                        <div onclick="switchTab('classroom-activity', null)" class="lib-card bg-white rounded-xl shadow-sm border border-pink-100 hover:shadow-md hover:border-pink-200 transition-all cursor-pointer group p-4">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="w-10 h-10 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center"><i class="fa-solid fa-users"></i></div>
-                                <button class="w-7 h-7 rounded-md bg-pink-50 text-pink-500"><i class="fa-solid fa-heart text-xs"></i></button>
-                            </div>
-                            <h4 class="font-semibold text-sm text-gray-800 mb-1">Group Activity - Role Play</h4>
-                            <p class="text-xs text-gray-500 mb-3">Classroom Activity · Grade 5</p>
-                            <span class="text-[10px] text-gray-400">Favorited May 12, 2025</span>
-                        </div>
+                    <div class="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                        <i class="fa-regular fa-heart text-5xl text-gray-300 mb-4"></i>
+                        <h4 class="font-bold text-gray-700 mb-1">No favorites yet</h4>
+                        <p class="text-sm text-gray-500">Star a material from your library and it will show up here.</p>
                     </div>
                 </div>
             </div>
@@ -805,57 +721,12 @@
                             <h2 class="text-2xl font-bold text-gray-900">Shared with Me</h2>
                             <p class="text-sm text-gray-500 mt-1">Materials colleagues and mentors have shared.</p>
                         </div>
-                        <button class="text-sm font-semibold text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition flex items-center gap-2">
-                            <i class="fa-solid fa-user-plus"></i> Invite a Colleague
-                        </button>
                     </div>
 
-                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm divide-y divide-gray-100 overflow-hidden">
-
-                        <div class="p-4 flex flex-wrap items-center gap-4 hover:bg-gray-50 transition-colors">
-                            <img src="https://ui-avatars.com/api/?name=Maria+S&background=7c3aed&color=fff&rounded=true" class="w-10 h-10 rounded-full" alt="">
-                            <div class="flex-1 min-w-[180px]">
-                                <p class="font-semibold text-sm text-gray-800">Grade 5 Science - Ecosystems Unit</p>
-                                <p class="text-xs text-gray-500 mt-0.5">Shared by Maria Santos · Learning Module</p>
-                            </div>
-                            <span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Can edit</span>
-                            <span class="text-xs text-gray-400 w-24 text-right hidden sm:block">2 days ago</span>
-                            <button onclick="switchTab('learning-module', null)" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition">Open</button>
-                        </div>
-
-                        <div class="p-4 flex flex-wrap items-center gap-4 hover:bg-gray-50 transition-colors">
-                            <img src="https://ui-avatars.com/api/?name=James+L&background=0891b2&color=fff&rounded=true" class="w-10 h-10 rounded-full" alt="">
-                            <div class="flex-1 min-w-[180px]">
-                                <p class="font-semibold text-sm text-gray-800">Persuasive Writing Rubric</p>
-                                <p class="text-xs text-gray-500 mt-0.5">Shared by James Lin · Performance Task</p>
-                            </div>
-                            <span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Can view</span>
-                            <span class="text-xs text-gray-400 w-24 text-right hidden sm:block">May 14, 2025</span>
-                            <button onclick="switchTab('performance-task', null)" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition">Open</button>
-                        </div>
-
-                        <div class="p-4 flex flex-wrap items-center gap-4 hover:bg-gray-50 transition-colors">
-                            <img src="https://ui-avatars.com/api/?name=Dept&background=db2777&color=fff&rounded=true" class="w-10 h-10 rounded-full" alt="">
-                            <div class="flex-1 min-w-[180px]">
-                                <p class="font-semibold text-sm text-gray-800">School-Wide Quiz Template</p>
-                                <p class="text-xs text-gray-500 mt-0.5">Shared by Math Department · Assessment / Quiz</p>
-                            </div>
-                            <span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Can edit</span>
-                            <span class="text-xs text-gray-400 w-24 text-right hidden sm:block">May 11, 2025</span>
-                            <button onclick="switchTab('assessment', null)" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition">Open</button>
-                        </div>
-
-                        <div class="p-4 flex flex-wrap items-center gap-4 hover:bg-gray-50 transition-colors">
-                            <img src="https://ui-avatars.com/api/?name=Ana+R&background=059669&color=fff&rounded=true" class="w-10 h-10 rounded-full" alt="">
-                            <div class="flex-1 min-w-[180px]">
-                                <p class="font-semibold text-sm text-gray-800">Think-Pair-Share Routine Cards</p>
-                                <p class="text-xs text-gray-500 mt-0.5">Shared by Ana Reyes · Classroom Activity</p>
-                            </div>
-                            <span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Can view</span>
-                            <span class="text-xs text-gray-400 w-24 text-right hidden sm:block">May 6, 2025</span>
-                            <button onclick="switchTab('classroom-activity', null)" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition">Open</button>
-                        </div>
-
+                    <div class="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                        <i class="fa-solid fa-user-group text-5xl text-gray-300 mb-4"></i>
+                        <h4 class="font-bold text-gray-700 mb-1">Nothing shared with you yet</h4>
+                        <p class="text-sm text-gray-500">When a colleague shares a material, it will appear here.</p>
                     </div>
                 </div>
             </div>
@@ -869,57 +740,12 @@
                             <h2 class="text-2xl font-bold text-gray-900">Recycle Bin</h2>
                             <p class="text-sm text-gray-500 mt-1">Deleted items are kept for 30 days.</p>
                         </div>
-                        <button class="text-sm font-semibold text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition flex items-center gap-2">
-                            <i class="fa-regular fa-trash-can"></i> Empty Recycle Bin
-                        </button>
                     </div>
 
-                    <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-                        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
-                        <p>Materials are permanently deleted after 30 days. Restore anything you still need before then.</p>
-                    </div>
-
-                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm divide-y divide-gray-100 overflow-hidden">
-
-                        <div class="p-4 flex flex-wrap items-center gap-4 hover:bg-gray-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-gray-100 text-gray-400 flex items-center justify-center"><i class="fa-solid fa-file-lines"></i></div>
-                            <div class="flex-1 min-w-[180px]">
-                                <p class="font-semibold text-sm text-gray-700">Draft - Old Lesson Plan</p>
-                                <p class="text-xs text-gray-500 mt-0.5">Lesson Plan · deleted May 10</p>
-                            </div>
-                            <span class="text-xs text-gray-400 w-20 text-right hidden sm:block">25 days left</span>
-                            <div class="flex gap-2">
-                                <button class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-rotate-left mr-1"></i>Restore</button>
-                                <button class="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition">Delete forever</button>
-                            </div>
-                        </div>
-
-                        <div class="p-4 flex flex-wrap items-center gap-4 hover:bg-gray-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-gray-100 text-gray-400 flex items-center justify-center"><i class="fa-solid fa-person-chalkboard"></i></div>
-                            <div class="flex-1 min-w-[180px]">
-                                <p class="font-semibold text-sm text-gray-700">Untitled Presentation</p>
-                                <p class="text-xs text-gray-500 mt-0.5">PowerPoint · deleted May 4</p>
-                            </div>
-                            <span class="text-xs text-gray-400 w-20 text-right hidden sm:block">19 days left</span>
-                            <div class="flex gap-2">
-                                <button class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-rotate-left mr-1"></i>Restore</button>
-                                <button class="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition">Delete forever</button>
-                            </div>
-                        </div>
-
-                        <div class="p-4 flex flex-wrap items-center gap-4 hover:bg-gray-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-gray-100 text-gray-400 flex items-center justify-center"><i class="fa-solid fa-list-check"></i></div>
-                            <div class="flex-1 min-w-[180px]">
-                                <p class="font-semibold text-sm text-gray-700">Practice Quiz (duplicate)</p>
-                                <p class="text-xs text-gray-500 mt-0.5">Assessment · deleted Apr 28</p>
-                            </div>
-                            <span class="text-xs text-gray-400 w-20 text-right hidden sm:block">13 days left</span>
-                            <div class="flex gap-2">
-                                <button class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-rotate-left mr-1"></i>Restore</button>
-                                <button class="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition">Delete forever</button>
-                            </div>
-                        </div>
-
+                    <div class="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                        <i class="fa-regular fa-trash-can text-5xl text-gray-300 mb-4"></i>
+                        <h4 class="font-bold text-gray-700 mb-1">Recycle bin is empty</h4>
+                        <p class="text-sm text-gray-500">Materials you delete are kept here for 30 days.</p>
                     </div>
                 </div>
             </div>
@@ -1462,6 +1288,120 @@
                     <p class="text-[11px] text-gray-400 text-center leading-relaxed">
                         Your drafts are already saved on this device. Signing in only adds syncing across devices &mdash; nothing is deleted if you sign out.
                     </p>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ACCOUNT SETTINGS ================= -->
+    <div id="account-modal" class="modal-root fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('account-modal')"></div>
+        <div class="relative h-full flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col" role="dialog" aria-modal="true" aria-labelledby="account-title">
+
+                <div class="px-6 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-start justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0"><i class="fa-solid fa-gear"></i></div>
+                        <div>
+                            <h3 id="account-title" class="font-bold text-lg leading-tight">Account Settings</h3>
+                            <p class="text-xs text-blue-100 mt-0.5">Picture, name, description and password.</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('account-modal')" class="w-8 h-8 rounded-lg text-white/70 hover:text-white hover:bg-white/15 flex items-center justify-center shrink-0" title="Close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <form class="px-6 py-5 space-y-5 overflow-y-auto" onsubmit="saveAccountSettings(event)" novalidate>
+
+                    <!-- Profile picture -->
+                    <div class="flex items-center gap-4">
+                        <img id="account-avatar" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMzIiIGZpbGw9IiNlMmU4ZjAiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjI1IiByPSIxMSIgZmlsbD0iIzk0YTNiOCIvPjxwYXRoIGQ9Ik0zMiAzOWMtMTEgMC0xOSA3LTIwIDE3YTMyIDMyIDAgMCAwIDQwIDBjLTEtMTAtOS0xNy0yMC0xN3oiIGZpbGw9IiM5NGEzYjgiLz48L3N2Zz4=" alt="Profile picture" class="h-16 w-16 rounded-full object-cover bg-gray-100 border border-gray-200 shrink-0">
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold text-gray-600 mb-1.5">Profile picture</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="document.getElementById('account-avatar-file').click()" class="text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
+                                    <i class="fa-solid fa-camera mr-1"></i> Replace
+                                </button>
+                                <button type="button" onclick="removeAccountAvatar()" class="text-xs font-semibold text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 px-3 py-1.5 rounded-lg transition">
+                                    Reset
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-gray-400 mt-1.5">JPG or PNG, resized automatically.</p>
+                            <input id="account-avatar-file" type="file" accept="image/*" class="hidden" onchange="accountAvatarPicked(this)">
+                        </div>
+                    </div>
+
+                    <!-- Display name -->
+                    <div>
+                        <label for="account-name" class="block text-xs font-semibold text-gray-600 mb-1.5">Display name</label>
+                        <input id="account-name" type="text" maxlength="60" placeholder="e.g., Maria" autocomplete="nickname"
+                               class="block w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label for="account-bio" class="block text-xs font-semibold text-gray-600 mb-1.5">Description</label>
+                        <textarea id="account-bio" rows="3" maxlength="240" placeholder="e.g., Grade 4 cooperating teacher, science major."
+                               class="block w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-y"></textarea>
+                        <p class="text-[11px] text-gray-400 mt-1">Colleagues you share with see this under your name.</p>
+                    </div>
+
+                    <!-- Email (read only) -->
+                    <div>
+                        <label for="account-email" class="block text-xs font-semibold text-gray-600 mb-1.5">Email</label>
+                        <input id="account-email" type="email" readonly
+                               class="block w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-500 bg-gray-50 cursor-not-allowed">
+                        <p class="text-[11px] text-gray-400 mt-1">Your sign-in address. It cannot be changed here.</p>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="border-t border-gray-100 pt-5">
+                        <p class="text-xs font-semibold text-gray-600 mb-3"><i class="fa-solid fa-lock mr-1 text-gray-400"></i> Change password</p>
+                        <div class="space-y-3">
+                            <div>
+                                <label for="account-pw-current" class="block text-[11px] font-semibold text-gray-500 mb-1.5">Current password</label>
+                                <div class="relative">
+                                    <input id="account-pw-current" type="password" autocomplete="current-password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
+                                           class="block w-full px-3 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                    <button type="button" onclick="togglePassword('account-pw-current', this)" title="Show password"
+                                            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 flex items-center justify-center">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="account-pw-new" class="block text-[11px] font-semibold text-gray-500 mb-1.5">New password</label>
+                                <div class="relative">
+                                    <input id="account-pw-new" type="password" autocomplete="new-password" placeholder="At least 6 characters"
+                                           class="block w-full px-3 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                    <button type="button" onclick="togglePassword('account-pw-new', this)" title="Show password"
+                                            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 flex items-center justify-center">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="account-pw-confirm" class="block text-[11px] font-semibold text-gray-500 mb-1.5">Confirm new password</label>
+                                <div class="relative">
+                                    <input id="account-pw-confirm" type="password" autocomplete="new-password" placeholder="Repeat it"
+                                           class="block w-full px-3 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                    <button type="button" onclick="togglePassword('account-pw-confirm', this)" title="Show password"
+                                            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 flex items-center justify-center">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-gray-400">Leave all three blank to keep your current password.</p>
+                        </div>
+                    </div>
+
+                    <p id="account-error" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></p>
+                    <p id="account-ok" class="hidden text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2"></p>
+
+                    <div class="flex gap-3 pt-1 pb-1">
+                        <button type="button" onclick="closeModal('account-modal')" class="flex-1 text-sm font-semibold text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 py-2.5 rounded-lg transition">Cancel</button>
+                        <button id="account-submit" type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-lg shadow-md transition">Save changes</button>
+                    </div>
                 </form>
 
             </div>
@@ -2122,8 +2062,8 @@
             TA_AUTH.session = session || null;
             TA_AUTH.user = (session && session.user) ? session.user : null;
 
-            if (TA_AUTH.user) Store.onSignedIn();
-            else Store.onSignedOut();
+            if (TA_AUTH.user) { Store.onSignedIn(); Profile.load(); }
+            else { Store.onSignedOut(); Profile.clear(); }
 
             renderAuthUI();
 
@@ -2139,16 +2079,169 @@
             return email ? email.split('@')[0] : 'Teacher';
         }
 
+        // Blank avatar template shown until the teacher uploads their own picture.
+        const DEFAULT_AVATAR = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMzIiIGZpbGw9IiNlMmU4ZjAiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjI1IiByPSIxMSIgZmlsbD0iIzk0YTNiOCIvPjxwYXRoIGQ9Ik0zMiAzOWMtMTEgMC0xOSA3LTIwIDE3YTMyIDMyIDAgMCAwIDQwIDBjLTEtMTAtOS0xNy0yMC0xN3oiIGZpbGw9IiM5NGEzYjgiLz48L3N2Zz4=';
+
+        function resizeImage(file, maxSide) {
+            return new Promise(function (resolve, reject) {
+                if (!file || !file.type || file.type.indexOf('image/') !== 0) { reject(new Error('Choose an image file.')); return; }
+                const reader = new FileReader();
+                reader.onerror = function () { reject(new Error('That file could not be read.')); };
+                reader.onload = function () {
+                    const img = new Image();
+                    img.onerror = function () { reject(new Error('That file is not a readable image.')); };
+                    img.onload = function () {
+                        let w = img.width, h = img.height;
+                        if (!w || !h) { reject(new Error('That image has no dimensions.')); return; }
+                        const scale = Math.min(1, maxSide / Math.max(w, h));
+                        w = Math.max(1, Math.round(w * scale));
+                        h = Math.max(1, Math.round(h * scale));
+                        const c = document.createElement('canvas');
+                        c.width = w; c.height = h;
+                        const ctx = c.getContext && c.getContext('2d');
+                        if (!ctx) { reject(new Error('This browser cannot resize images.')); return; }
+                        // Flatten transparency so an alpha PNG never renders as a black square.
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(0, 0, w, h);
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(c.toDataURL('image/jpeg', 0.85));
+                    };
+                    img.src = String(reader.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        /* ---------- Profile: display name, bio and avatar ---------- */
+        const Profile = {
+            data: {},
+
+            cacheKey: function () {
+                const uid = Store.uid();
+                return uid ? 'ta_profile::' + uid : null;
+            },
+            _readCache: function () {
+                const k = this.cacheKey();
+                if (!k) return {};
+                try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; }
+            },
+            _writeCache: function (d) {
+                const k = this.cacheKey();
+                if (!k) return;
+                try { localStorage.setItem(k, JSON.stringify(d || {})); } catch (e) { /* private mode */ }
+            },
+
+            // Paint from the cached copy first so the header is never blank.
+            load: function () {
+                this.data = this._readCache();
+                renderAuthUI();
+
+                const uid = Store.uid();
+                const client = Store.client();
+                if (!uid || !client) return Promise.resolve(this.data);
+
+                return client.from('profiles')
+                    .select('display_name,bio,avatar_url')
+                    .eq('user_id', uid)
+                    .maybeSingle()
+                    .then(function (res) {
+                        if (res && res.error) {
+                            // PGRST205 = table not deployed yet; fall back to the cache.
+                            if (String(res.error.code || '') !== 'PGRST205') console.warn('[TeachAssist] profile load failed:', res.error.message);
+                        } else if (res && res.data) {
+                            Profile.data = res.data;
+                            Profile._writeCache(res.data);
+                        }
+                        renderAuthUI();
+                        return Profile.data;
+                    })
+                    .catch(function () { return Profile.data; });
+            },
+
+            save: function (patch) {
+                const uid = Store.uid();
+                const client = Store.client();
+                const next = Object.assign({}, this.data, patch || {});
+
+                this.data = next;
+                this._writeCache(next);
+                renderAuthUI();
+
+                if (!uid || !client) return Promise.resolve(next);
+                return client.from('profiles').upsert({
+                    user_id: uid,
+                    display_name: next.display_name || null,
+                    bio: next.bio || null,
+                    avatar_url: next.avatar_url || null,
+                    updated_at: new Date().toISOString()
+                }).then(function (res) {
+                    if (res && res.error) throw res.error;
+                    return next;
+                });
+            },
+
+            clear: function () { this.data = {}; },
+
+            uploadAvatar: function (file) {
+                const self = this;
+                return resizeImage(file, 256).then(function (dataUrl) {
+                    const uid = Store.uid();
+                    const client = Store.client();
+                    if (!uid || !client) return self.save({ avatar_url: dataUrl });
+
+                    const path = uid + '/avatar-' + Date.now() + '.jpg';
+                    return fetch(dataUrl)
+                        .then(function (r) { return r.blob(); })
+                        .then(function (blob) {
+                            return client.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+                        })
+                        .then(function (res) {
+                            if (res && res.error) throw res.error;
+                            const pub = client.storage.from('avatars').getPublicUrl(path);
+                            const url = (pub && pub.data && pub.data.publicUrl) || '';
+                            if (!url) throw new Error('No public URL returned.');
+                            return self.save({ avatar_url: url });
+                        })
+                        .catch(function (err) {
+                            // Storage bucket missing or blocked: keep the picture working
+                            // by storing the downscaled image directly instead.
+                            console.warn('[TeachAssist] avatar upload failed, using inline copy:', err && err.message);
+                            return self.save({ avatar_url: dataUrl });
+                        });
+                });
+            }
+        };
+
         function renderAuthUI() {
             const signedIn = !!TA_AUTH.user;
-            const name = signedIn ? displayName(TA_AUTH.user) : 'User';
+            const p = Profile.data || {};
+            const name = signedIn ? (p.display_name || displayName(TA_AUTH.user)) : 'User';
             const email = signedIn ? (TA_AUTH.user.email || '') : '';
+            let sub = signedIn ? (p.bio || 'Pre-Service Teacher') : 'Pre-Service Teacher';
+            if (sub.length > 44) sub = sub.slice(0, 44).replace(/\s+\S*$/, '') + '\u2026';
 
             setText('header-greeting', name);
             setText('profile-display-name', name);
             setText('profile-menu-name', name);
-            setText('profile-display-sub', signedIn ? 'Pre-Service Teacher' : 'Sign in to sync');
-            setText('profile-menu-sub', signedIn ? email : 'Not signed in - saved on this device');
+            setText('profile-display-sub', sub);
+            setText('profile-menu-sub', email);
+
+            // Signed-out visitors get a Sign in button; the avatar menu is hidden.
+            const out = document.getElementById('header-signed-out');
+            const inn = document.getElementById('header-signed-in');
+            if (out) out.classList.toggle('hidden', signedIn);
+            if (inn) inn.classList.toggle('hidden', !signedIn);
+            if (!signedIn) {
+                const menu = document.getElementById('profile-menu');
+                if (menu) menu.classList.add('hidden');
+                const trigger = document.getElementById('profile-trigger');
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            }
+
+            const avatar = document.getElementById('profile-avatar');
+            if (avatar) avatar.src = p.avatar_url || DEFAULT_AVATAR;
+            const headerAvatar = document.getElementById('header-avatar');
+            if (headerAvatar) headerAvatar.src = p.avatar_url || DEFAULT_AVATAR;
 
             if (!signedIn) setSyncChip(authConfigured() ? 'signin' : 'local');
             else if (Store._tableMissing) setSyncChip('local');
@@ -2308,21 +2401,157 @@
             if (icon) icon.className = conf.icon + ' text-[10px]';
         }
 
-        // Phase 1 acknowledged the click instead of pretending. These are real now.
         function profileAction(action) {
             closeAllMenus();
             if (action === 'Log Out') { signOutUser(); return; }
-            if (action === 'Switch User') {
-                if (TA_AUTH.user) signOutUser();
-                openAuthModal('signin');
-                return;
-            }
             if (action === 'Account Settings') {
-                toast(TA_AUTH.user
-                    ? 'Signed in as ' + (TA_AUTH.user.email || 'your account') + '.'
-                    : 'Sign in first to manage your account.');
-                if (!TA_AUTH.user) openAuthModal('signin');
+                if (TA_AUTH.user) openAccountSettings();
+                else openAuthModal('signin');
             }
+        }
+
+        /* ---------- Account settings ---------- */
+        function setInput(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.value = (value === null || value === undefined) ? '' : String(value);
+        }
+        function getInput(id) {
+            const el = document.getElementById(id);
+            return el ? String(el.value || '') : '';
+        }
+
+        // Clears both banners when called with no message.
+        function accountMessage(kind, text) {
+            const err = document.getElementById('account-error');
+            const ok = document.getElementById('account-ok');
+            if (err) { err.classList.add('hidden'); err.innerText = ''; }
+            if (ok) { ok.classList.add('hidden'); ok.innerText = ''; }
+            if (!text) return;
+            const el = (kind === 'error') ? err : ok;
+            if (el) { el.innerText = text; el.classList.remove('hidden'); }
+        }
+
+        function togglePassword(id, btn) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const reveal = el.type === 'password';
+            el.type = reveal ? 'text' : 'password';
+            const icon = btn && btn.querySelector('i');
+            if (icon) icon.className = reveal ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+            if (btn) btn.title = reveal ? 'Hide password' : 'Show password';
+        }
+
+        function openAccountSettings() {
+            if (!TA_AUTH.user) { openAuthModal('signin'); return; }
+            closeAllMenus();
+
+            const p = Profile.data || {};
+            setInput('account-name', p.display_name || '');
+            setInput('account-bio', p.bio || '');
+            setInput('account-email', TA_AUTH.user.email || '');
+            setInput('account-pw-current', '');
+            setInput('account-pw-new', '');
+            setInput('account-pw-confirm', '');
+
+            ['account-pw-current', 'account-pw-new', 'account-pw-confirm'].forEach(function (id) {
+                const el = document.getElementById(id);
+                if (el) el.type = 'password';
+            });
+
+            const av = document.getElementById('account-avatar');
+            if (av) av.src = p.avatar_url || DEFAULT_AVATAR;
+
+            const file = document.getElementById('account-avatar-file');
+            if (file) file.value = '';
+
+            accountMessage('', '');
+            openModal('account-modal');
+        }
+
+        function accountAvatarPicked(input) {
+            const file = input && input.files && input.files[0];
+            if (!file) return;
+            if (!TA_AUTH.user) { input.value = ''; openAuthModal('signin'); return; }
+
+            accountMessage('', '');
+            Profile.uploadAvatar(file).then(function () {
+                input.value = '';
+                const av = document.getElementById('account-avatar');
+                if (av) av.src = (Profile.data && Profile.data.avatar_url) || DEFAULT_AVATAR;
+                accountMessage('ok', 'Profile picture updated.');
+                toast('Profile picture updated.');
+            }).catch(function (err) {
+                input.value = '';
+                accountMessage('error', (err && err.message) || 'That picture could not be saved.');
+            });
+        }
+
+        function removeAccountAvatar() {
+            const av = document.getElementById('account-avatar');
+            if (av) av.src = DEFAULT_AVATAR;
+            Profile.save({ avatar_url: '' })
+                .then(function () { accountMessage('ok', 'Profile picture reset to the default.'); })
+                .catch(function (err) { accountMessage('error', (err && err.message) || 'Could not reset the picture.'); });
+        }
+
+        function saveAccountSettings(e) {
+            if (e) e.preventDefault();
+            if (!TA_AUTH.user) { closeModal('account-modal'); openAuthModal('signin'); return; }
+
+            const name = getInput('account-name').trim().slice(0, 60);
+            const bio = getInput('account-bio').trim().slice(0, 240);
+            const current = getInput('account-pw-current');
+            const next = getInput('account-pw-new');
+            const confirmPw = getInput('account-pw-confirm');
+
+            accountMessage('', '');
+
+            const changingPassword = !!(next || confirmPw || current);
+            if (changingPassword) {
+                if (!current) { accountMessage('error', 'Enter your current password to confirm the change.'); return; }
+                if (!next) { accountMessage('error', 'Enter a new password, or leave all three password fields blank.'); return; }
+                if (next.length < 6) { accountMessage('error', 'The new password needs at least 6 characters.'); return; }
+                if (next !== confirmPw) { accountMessage('error', 'The two new passwords do not match.'); return; }
+            }
+
+            const btn = document.getElementById('account-submit');
+            const restore = function () { if (btn) { btn.disabled = false; btn.innerText = 'Save changes'; } };
+            if (btn) { btn.disabled = true; btn.innerText = 'Saving\u2026'; }
+
+            const client = Store.client();
+            const fail = function (err) {
+                restore();
+                // authErrorMessage() is tuned for the sign-in form; a wrong
+                // current password here needs its own wording.
+                const raw = String((err && err.message) || '').toLowerCase();
+                accountMessage('error', raw.indexOf('invalid login credentials') !== -1
+                    ? 'Your current password is not correct.'
+                    : authErrorMessage(err));
+            };
+
+            // Verify the current password before changing it, so a typo never
+            // leaves the account locked to a password the teacher does not know.
+            const passwordStep = (!changingPassword || !client)
+                ? Promise.resolve()
+                : client.auth.signInWithPassword({ email: TA_AUTH.user.email, password: current })
+                    .then(function (res) {
+                        if (res && res.error) throw res.error;
+                        return client.auth.updateUser({ password: next });
+                    })
+                    .then(function (res) {
+                        if (res && res.error) throw res.error;
+                    });
+
+            passwordStep
+                .then(function () { return Profile.save({ display_name: name, bio: bio }); })
+                .then(function () {
+                    setInput('account-pw-current', '');
+                    setInput('account-pw-new', '');
+                    setInput('account-pw-confirm', '');
+                    restore();
+                    accountMessage('ok', changingPassword ? 'Profile updated and password changed.' : 'Profile updated.');
+                })
+                .catch(fail);
         }
 
         /* ---------- Share modal ---------- */
@@ -3400,7 +3629,6 @@
         const Store = {
             syncEnabled: false,           // true only while a session exists
             DRAFTS_KEY: 'ta_materials',
-            SEED_KEY: 'ta_materials_seeded',
 
             _queue: [],                   // mutations waiting to be pushed
             _flushing: false,
@@ -3915,42 +4143,15 @@
         let libraryFilter = 'all';
 
         function seedDrafts() {
-            let seeded = false;
-            try { seeded = localStorage.getItem(Store.SEED_KEY) === '1'; } catch (e) { seeded = true; }
-            if (seeded) return Store.readDrafts();
-
-            const now = Date.now();
-            const seeds = [
-                seedRecord('lesson-plan', now - 1000 * 60 * 60 * 26),
-                seedRecord('powerpoint', now - 1000 * 60 * 60 * 50),
-                seedRecord('assessment', now - 1000 * 60 * 60 * 74),
-                seedRecord('worksheet', now - 1000 * 60 * 60 * 98)
-            ].filter(Boolean);
-
-            if (seeds.length) Store.writeDrafts(seeds);
-            try { localStorage.setItem(Store.SEED_KEY, '1'); } catch (e) { /* private mode */ }
-            return Store.readDrafts();
-        }
-
-        function seedRecord(scope, when) {
-            const sample = SAMPLE_CONTENT[scope];
-            if (!sample) return null;
-            const material = MATERIAL_CONFIG[scope];
-            const style = viewStyle(scope);
-            const typeLabel = material ? material.title : 'Lesson Plan';
-            return {
-                id: 'seed-' + scope,
-                scope: scope,
-                title: sample.meta.filter(v => v)[0] || (typeLabel + ' - draft'),
-                typeLabel: typeLabel,
-                filter: LIB_TYPE_MAP[scope] || 'lesson',
-                icon: style.icon, solid: style.solid, soft: style.soft,
-                text: style.text, border: style.border,
-                meta: sample.meta.slice(),
-                sections: Object.assign({}, sample.sections),
-                progress: 60,
-                updatedAt: when
-            };
+            // Demo content has been removed - every library starts empty.
+            // Browsers that ran the old build still have seeded records sitting
+            // in localStorage (and mirrored in Supabase under the same id), so
+            // drop them here. writeDrafts only fires when something is actually
+            // removed, so this costs nothing on subsequent renders.
+            const all = Store.readDrafts();
+            const real = all.filter(d => !d || !d.id || d.id.indexOf('seed-') !== 0);
+            if (real.length !== all.length) Store.writeDrafts(real);
+            return real;
         }
 
         function formatDate(ts) {

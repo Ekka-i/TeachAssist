@@ -1,0 +1,9 @@
+# Deploy configuration for TeachAssist.
+#
+# The site is a single static index.html at the repository root with no build
+# step - the only thing Netlify needs to be told is where the deployable files
+# live. Pinning that here means the config travels with the repo instead of
+# existing only as a setting in Netlify's dashboard.
+
+[build]
+  publish = "."
